@@ -1,194 +1,129 @@
 # Connect-X with Multiple RL Agents
 
-> **Kaggle Competition Project**: Build a Reinforcement Learning agent to compete against other participants in the [Kaggle Connect X](https://www.kaggle.com/c/connectx) simulation competition.
+> Building Reinforcement Learning agents for the [Kaggle Connect X](https://www.kaggle.com/c/connectx) competition.
 
-## 🎯 Project Objective
+## What's This Project About?
 
-This project implements multiple RL (Reinforcement Learning) agents to compete in the Kaggle Connect X competition. The approach follows a structured learning path:
+This project tackles the Kaggle Connect X challenge—a Connect Four-style game where you build AI agents to compete. I implemented and compared multiple approaches:
 
-1. **Understand the game mechanics** and environment
-2. **Create baseline agents** (Random and Rule-Based) for comparison
-3. **Experiment with RL algorithms**:
-   - Deep Q-Network (DQN)
-   - Proximal Policy Optimization (PPO)
-4. **Train and evaluate** agents against various opponents
-5. **Compare performance** to select the best submission
+- **Baseline agents**: Random and Rule-Based (for benchmarking)
+- **Deep Q-Network (DQN)**: Value-based RL
+- **Proximal Policy Optimization (PPO)**: Policy-based RL
 
-## 🎮 About Connect X
+The goal was to understand both algorithms, make them work correctly for this game, and see which one performs better.
 
-Connect X is a classic "connect N in a row" game similar to Connect Four:
+## The Game
 
-| Property | Value |
-|----------|-------|
-| **Board Size** | 7 columns × 6 rows |
-| **Objective** | Connect 4 pieces in a row |
-| **Win Conditions** | Horizontal, Vertical, or Diagonal |
-| **Players** | 2 players (alternating turns) |
-| **Actions** | Drop a piece in columns 0-6 |
-| **Rewards** | +1 (win), -1 (loss), 0 (draw) |
+Connect X is played on a 7×6 board. Players take turns dropping pieces, trying to connect 4 in a row (horizontally, vertically, or diagonally). Simple rules, but surprisingly deep strategy.
 
-## 🤖 Implemented Agents
-
-### Baseline Agents
-
-#### 1. Random Agent
-A simple baseline that randomly selects a valid column. Used to establish minimum performance expectations.
-
-#### 2. Rule-Based Agent
-A heuristic-based agent implementing basic game strategy:
-1. ✅ Play winning move if available
-2. 🛡️ Block opponent's winning move
-3. 📍 Prefer center column (strategic advantage)
-4. 🎲 Random fallback for other situations
-
-**Performance**: ~92% win rate against Random Agent
-
-### RL Agents
-
-#### 3. DQN (Deep Q-Network) Agent
-A value-based deep reinforcement learning agent:
-
-| Component | Implementation |
-|-----------|----------------|
-| **Network** | 4-layer fully connected (input → 128 → 128 → 128 → 7) |
-| **Experience Replay** | Buffer size: 10,000 |
-| **Target Network** | Soft update every 100 steps |
-| **Exploration** | ε-greedy (1.0 → 0.01, decay: 0.995) |
-| **Action Masking** | Invalid moves masked with -∞ |
-| **Gradient Clipping** | Max norm: 1.0 |
-
-#### 4. PPO (Proximal Policy Optimization) Agent
-A policy gradient agent with actor-critic architecture:
-
-| Component | Implementation |
-|-----------|----------------|
-| **Architecture** | Shared backbone + Actor/Critic heads |
-| **Hidden Size** | 256 (shared), 128 (heads) |
-| **Clipping** | ε = 0.2 |
-| **Entropy Bonus** | 0.01 (encourages exploration) |
-| **K-Epochs** | 4 passes per update |
-| **Update Frequency** | Every 10 episodes |
-
-## 📁 Project Structure
-
-```
-Connect-X-with-multiple-agents/
-├── ConnectX_RL_Agent.ipynb   # Main notebook with all implementations
-├── README.md                  # Project documentation
-└── LICENSE                    # MIT License
-```
-
-## 🛠️ Requirements
-
-- Python 3.10+
-- PyTorch (for neural networks)
-- NumPy
-- Matplotlib & Seaborn (visualization)
-- kaggle-environments (competition environment)
+## Quick Start
 
 ```bash
+# Install dependencies
 pip install numpy torch matplotlib seaborn kaggle-environments
+
+# Open the notebook
+jupyter notebook ConnectX_RL_Agent.ipynb
 ```
 
-## 🚀 Getting Started
+Run the cells in order—the notebook handles everything from training to evaluation.
 
-### 1. Clone and Setup
-```bash
-git clone https://github.com/yourusername/Connect-X-with-multiple-agents.git
-cd Connect-X-with-multiple-agents
-pip install -r requirements.txt  # or install dependencies manually
-```
-
-### 2. Run the Notebook
-Open `ConnectX_RL_Agent.ipynb` in Jupyter and execute cells sequentially:
-- Cells 1-5: Environment setup and baseline agents
-- Cells 6-9: DQN implementation and training
-- Cells 10-13: PPO implementation and training
-- Cells 14+: Evaluation and visualization
-
-### 3. Training Examples
-
-**DQN Agent (Two-Phase Training)**:
-```python
-# Phase 1: Learn basics against random opponent
-dqn_agent = train_dqn_agent(episodes=500, opponent='random')
-
-# Phase 2: Refine against stronger opponent
-dqn_agent_final = train_dqn_agent(episodes=500, opponent='rule_based', epsilon_start=0.3)
-```
-
-**PPO Agent**:
-```python
-# Phase 1: Train against random
-ppo_agent = train_ppo_agent(episodes=300, opponent='random')
-
-# Phase 2: Train against rule-based
-ppo_agent_final = train_ppo_agent(episodes=300, opponent='rule_based')
-```
-
-### 4. Evaluate Performance
-```python
-# Compare agents head-to-head
-compare_agents(dqn_agent_wrapper, ppo_agent_wrapper, "DQN", "PPO", n_rounds=100)
-
-# Visualize a game
-visualize_game(dqn_agent_wrapper, rule_based_agent, "DQN", "Rule-based")
-```
-
-## 📊 Expected Performance
+## Results
 
 | Agent | vs Random | vs Rule-Based |
 |-------|:---------:|:-------------:|
-| **Rule-Based** | ~92% | — |
-| **DQN** | 60-80% | 30-50% |
-| **PPO** | 70-90% | 40-60% |
+| Rule-Based | ~92% | — |
+| DQN | 60-80% | 30-50% |
+| PPO | 70-90% | 40-60% |
 
-*Win rates after standard training. Results may vary based on training duration and hyperparameters.*
+## How the Algorithms Work
 
-## � Technical Implementation
+### DQN (Deep Q-Network)
 
-### State Encoding
-The board is encoded as a 3-channel binary representation (126 features total):
+DQN learns a Q-function that estimates "how good is taking action A in state S?"
+
 ```
-Channel 1: Agent's pieces     (6×7 = 42 values)
-Channel 2: Opponent's pieces  (6×7 = 42 values)
-Channel 3: Empty spaces       (6×7 = 42 values)
+State → Neural Network → Q-values for each column → Pick highest (valid) one
 ```
 
-### Reward Shaping
-| Outcome | Reward |
-|---------|--------|
-| Win | +1.0 |
-| Loss | -1.0 |
-| Draw | +0.5 |
-| Ongoing | 0.0 |
+**Key ideas:**
+- **Experience Replay**: Store past moves, sample randomly to break correlations
+- **Target Network**: Separate network for stable training targets
+- **ε-Greedy**: Start random (explore), gradually become greedy (exploit)
 
-### Training Hyperparameters
+### PPO (Proximal Policy Optimization)
 
-**DQN**:
-- Learning Rate: 0.001
-- Batch Size: 64
-- Discount (γ): 0.99
-- Epsilon Decay: 0.995
-- Replay Buffer: 10,000
+PPO directly learns a policy (probability distribution over actions) using actor-critic architecture.
 
-**PPO**:
-- Learning Rate: 0.0003
-- Discount (γ): 0.99
-- Clip Range: 0.2
-- K-Epochs: 4
-- Gradient Clip: 0.5
+```
+State → Shared Layers → Actor (action probs) + Critic (state value)
+```
 
-## 🏆 Kaggle Submission
+**Key ideas:**
+- **Actor**: Decides what to do
+- **Critic**: Evaluates how good the situation is
+- **Clipped Updates**: Prevents the policy from changing too drastically
 
-To submit your trained agent to the Kaggle competition:
+## My Implementation Approach
 
-1. Export your trained agent as a Python function
-2. Create a `submission.py` file with your agent
-3. Submit via Kaggle Notebooks or API
+Here's what makes this implementation work well:
+
+### 1. Smart State Encoding
+
+Instead of feeding raw board values, I encode it as 3 binary channels:
+```python
+my_pieces    = where(board == my_mark)      # Where I am
+opp_pieces   = where(board == opp_mark)     # Where opponent is  
+empty_spaces = where(board == 0)            # What's available
+```
+This way, the agent always sees the game from its own perspective—works for both Player 1 and Player 2.
+
+### 2. Action Masking
+
+You can't drop a piece in a full column. I mask invalid actions:
+- **DQN**: Set Q-value to `-∞` for full columns
+- **PPO**: Zero out probabilities, then renormalize
+
+No wasted learning on impossible moves.
+
+### 3. Reward Shaping
 
 ```python
-# Example submission wrapper
+Win:  +1.0
+Loss: -1.0
+Draw: +0.5  # Better than losing!
+```
+
+I intentionally avoided step penalties—they can make the agent rush into bad decisions.
+
+### 4. Curriculum Learning
+
+Training in two phases works better:
+1. **vs Random**: Learn the basics (how to win)
+2. **vs Rule-Based**: Learn defense (how to block)
+
+Starting against a strong opponent just leads to constant losses and slow learning.
+
+### 5. Bug Fixes
+
+A few things that tutorials often get wrong:
+- Target network should update every N steps, not every step
+- PPO critic output needs `.squeeze(-1)` to match reward dimensions
+- Gradient clipping prevents training explosions
+
+## Project Structure
+
+```
+├── ConnectX_RL_Agent.ipynb   # Everything is here
+├── README.md
+└── LICENSE
+```
+
+## Kaggle Submission
+
+To submit your trained agent:
+
+```python
 def my_agent(obs, config):
     state = encode_board(obs, config)
     valid_actions = get_valid_actions(obs, config)
@@ -196,21 +131,17 @@ def my_agent(obs, config):
     return int(action)
 ```
 
-## 🔑 Key Improvements in This Implementation
+## What I Learned
 
-- ✅ **Proper action masking** - Only valid moves are considered
-- ✅ **Correct target network updates** - Stable Q-learning
-- ✅ **Balanced reward shaping** - Clear win/loss signals
-- ✅ **Fixed tensor dimensions** - PPO critic outputs 1D tensors
-- ✅ **Gradient clipping** - Prevents training instabilities
-- ✅ **Curriculum learning** - Progressive difficulty increase
+- Action masking is crucial for games with invalid moves
+- Curriculum learning really helps—don't throw the agent into the deep end
+- DQN is simpler to implement; PPO is more stable once you get it right
+- Small bugs (like tensor dimensions) can completely break training
 
-## 📜 License
+## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) file.
 
-## 🙏 Acknowledgments
+---
 
-- [Kaggle Connect X Competition](https://www.kaggle.com/c/connectx)
-- [kaggle-environments](https://github.com/Kaggle/kaggle-environments) library
-- PyTorch team for the deep learning framework
+Built for the Kaggle Connect X competition. Feel free to use, modify, and improve!
